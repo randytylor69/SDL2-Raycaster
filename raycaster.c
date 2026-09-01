@@ -22,6 +22,9 @@
 #define RAY_SIZE_MODIFIER 0.1
 #define RENDER_DISTANCE 1000
 
+/* calculation macros*/
+#define DEG2RAD PI/180;
+
 bool is_running = true;
 
 /* 0 = no wall    1 = wall */
@@ -95,8 +98,21 @@ double getDistance(Player player, double angle){
     return -1;
 }
 
-void drawFOV(SDL_Surface *pSurface, Player player){
+/* draw vertical line centered around the horizontal centre axis */
+void drawVerticalLine(SDL_Surface *pSurface, double height, double x_pos){
+    SDL_Rect vertical_rect = {x_pos, SCREEN_HEIGHT/2 - height/2, }
+}
 
+void drawFOV(SDL_Surface *pSurface, Player player){
+    for (double angle = player.angle-PLAYER_FOV/2; 
+	angle <= player.angle + PLAYER_FOV/2; angle += 0.1){
+
+	/* check distance for every angle (radians) in field of view.
+	 * but note that PLAYER_POV & player.angle are in degrees */
+	double distance = getDistance(player, angle*DEG2RAD);
+
+	/* based on distance, draw vertical line */
+    }
 }
 
 int main(){
