@@ -10,6 +10,7 @@
 #define SCREEN_HEIGHT 600
 #define COLOR_WHITE 0xffffff
 #define COLOR_GREEN 0x32a852
+#define COLOR_BLACK 0x000000
 #define CELL_SIZE 50
 
 #define MAP_WIDTH 5
@@ -19,21 +20,21 @@
 #define PLAYER_FOV 80  
 
 /* getDistance macros */
-#define RAY_SIZE_MODIFIER 0.1
-#define RENDER_DISTANCE 1000
+#define RAY_SIZE_MODIFIER 1
+#define RENDER_DISTANCE 250
 
 /* calculation macros*/
-#define DEG2RAD PI/180;
+#define DEG2RAD 3.141592653589793/180.0
 
 bool is_running = true;
 
 /* 0 = no wall    1 = wall */
 int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {0, 1, 0, 1, 0},
-    {0, 1, 0, 1, 0},
-    {1, 0, 0, 1, 0},
-    {1, 0, 0, 0, 0},
-    {1, 1, 1, 0, 0},
+    {0, 0, 0, 1, 0},
+    {0, 0, 1, 1, 0},
+    {1, 0, 0, 1, 1},
+    {1, 0, 0, 0, 1},
+    {1, 1, 1, 0, 1},
 };
 
 typedef struct{
@@ -78,11 +79,11 @@ double getDistance(Player player, double angle){
 	int cell_y = ray_y / CELL_SIZE;
 	printf("cell values: %d, %d\n", cell_x, cell_y);
 
-	if (cell_x >= MAP_WIDTH || cell_y >= MAP_HEIGHT){
+	if (cell_x >= MAP_WIDTH || cell_y >= MAP_HEIGHT || cell_x < 0 || cell_y < 0){
 	    return -1;
 	}
 
-	/* is ray inside a wall cell? */
+	/* has it hit a wall? */
 	if (map[cell_y][cell_x]==1){
 	    wall_detected = true;
 	    return ray_distance;
@@ -93,25 +94,32 @@ double getDistance(Player player, double angle){
 	}
 
     }
-
-    printf("SOMETHING WRONG HAPPENED DURING DISTANCE CALCULATION");
     return -1;
 }
 
 /* draw vertical line centered around the horizontal centre axis */
-void drawVerticalLine(SDL_Surface *pSurface, double height, double x_pos){
-    SDL_Rect vertical_rect = {x_pos, SCREEN_HEIGHT/2 - height/2, }
+void drawVerticalLine(SDL_Surface *pSurface, double height, double x_pos, Uint32 color){
+    SDL_Rect vertical_rect = {x_pos, SCREEN_HEIGHT/2 - height/2, 1, height};
+    SDL_FillRect(pSurface, &vertical_rect, color);
 }
 
 void drawFOV(SDL_Surface *pSurface, Player player){
+
+    double angle_scale = SCREEN_WIDTH / PLAYER_FOV;
+    double angle_offset = player.angle - PLAYER_FOV/2;
+
     for (double angle = player.angle-PLAYER_FOV/2; 
-	angle <= player.angle + PLAYER_FOV/2; angle += 0.1){
+	angle <= (player.angle + PLAYER_FOV/2); angle += 0.1){
 
 	/* check distance for every angle (radians) in field of view.
 	 * but note that PLAYER_POV & player.angle are in degrees */
 	double distance = getDistance(player, angle*DEG2RAD);
 
 	/* based on distance, draw vertical line */
+	double visual_height = SCREEN_HEIGHT * 50 /distance;
+	double vertical_line_x_pos = (angle-angle_offset)*angle_scale;
+
+	drawVerticalLine(pSurface, visual_height, vertical_line_x_pos, COLOR_WHITE);
     }
 }
 
@@ -131,9 +139,8 @@ int main(){
 	listenToKeyboardInput(event);
 
 	/* drawing */
-	drawPlayer(pSurface, player);
+	SDL_FillRect(pSurface, NULL, COLOR_BLACK); // force flush whole screen
 	drawFOV(pSurface, player);
-	double distance = getDistance(player, 45);
 	SDL_UpdateWindowSurface(pWindow);
 		
 	/* update */
