@@ -6,6 +6,10 @@ A crude raycaster built from scratch that supports:
 - Camera (player) rotation 
 - Camera (player) movement
 
+<div align="center">
+<img src="./screenshots/newscreenshot_068.jpg" alt="screenshot" height="400" />
+</div>
+
 I've also included the documentation below, it's only using [SDL2/SDL](https://wiki.libsdl.org/SDL2/FrontPage) so it's very low level, the only requirement to replicate this project is knowledge in basic maths (mostly trig). The build commands can be found after the documentation.
 
 &nbsp;
