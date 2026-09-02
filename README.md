@@ -42,9 +42,9 @@ SDL_FillRect(pSurface, &rect, 0xffffff);
 SDL_UpdateWindowSurface(pWindow);
 ```
 
-| ![screenshot](./screenshos/newscreenshot_059.jpg) |
-| --- |
-| It took me an hour to figure this out because I'm using Suckless's DT as my terminal emulator, which has trouble rendering stuff on a window, but alas it's done |
+<div align="center">
+<img src="./screenshots/newscreenshot_059.jpg" alt="screenshot" height="400" />
+</div>
 
 Finally, wrap everything inside a while loop with a short delay between each frame:
 ```c
@@ -63,7 +63,7 @@ And we're ready to go!
 Our end goal is to generate a (fake) 3D map, we can get there by first generating a 2D grid map, then modify it to 3D. 
 
 ### Game Assets
----
+
 We don't start with many stuff (the raycaster just needs walls, really), but a few things can be defined right off the bat:
 
 - A global `PLAYER_FOV` value (field of view)
@@ -87,9 +87,9 @@ typedef struct{
 } Player;
 ```
 
-| ![screenshot](./screenshos/newscreenshot_60.jpg) |
-| --- |
-| Excalidraw Illustration |
+<div align="center">
+<img src="./screenshots/newscreenshot_060.jpg" alt="screenshot" height="400" />
+</div>
 
 When the player's gaze hits a wall, the distance between the Player and the wall determines the height of the wall, which then gets displayed onto the screen.
 
@@ -148,7 +148,11 @@ if(map[cell_y][cell_x] == 1){ // mission accomplished
 ## 3. Drawing from the Field of View
 
 Scanning through the field of view, we can start constructing what the player can see, starting from the one of the `FOV` arrows to the other.
-![[newscreenshot_062 1.jpg | 400]]
+
+<div align="center">
+<img src="./screenshots/newscreenshot_062.jpg" alt="screenshot" height="400" />
+</div>
+
 But what's the exact angle at which we start drawing? That angle is essentially `α` - `ϑ`. And we know the values for each angle:
 
 - `ϑ` is `FOV/2`
@@ -166,15 +170,15 @@ for (double angle = player.angle - PLAYER_FOV/2;
 ```
 
 ### Inside the `for` loop
----
+
 For every possible angle within the designated field of view, we will:
 - Shoot a gaze from the player's eye
 - Get the distance between that gaze and the wall that it hits
 - Draw a vertical line based on the distance
 
-| ![screenshot](./screenshos/newscreenshot_63.jpg) |
-| --- |
-| Excalidraw Illustration |
+<div align="center">
+<img src="./screenshots/newscreenshot_063.jpg" alt="screenshot" height="400" />
+</div>
 
 A separate `drawVerticalLine()` function is required, but all it does is feeding the correct arguments to SDL's inherent `SDL_FillRect()` function that draws a `SDL_Rect` object. Remember, a line is just a thin rectangle. 
 
@@ -188,6 +192,7 @@ typedef struct SDL_Rect
 ```
 
 ##### The `x` property
+
 The `x` position of our `SDL_Rect` is simply a modified `angle` value of the current `for` loop iteration, and it makes sense: the smaller the angle, the more-to-the-left the `SDL_Rect` will be, since we're scanning from left to right. It requires a bit of thinking to obtain the modification values to adjust the original `angle`:
 
 -  `angle_offset` is needed to remove the part outside `PLAYER_FOV`
@@ -201,8 +206,13 @@ double x = (angle - angle_offset) * angle_scale;
 ```
 
 ##### The `y` property
+
 The `y` position of the `SDL_Rect` is much easier to get if you consult the graph I drew:
-![[newscreenshot_065.jpg | 500]]
+
+<div align="center">
+<img src="./screenshots/newscreenshot_065.jpg" alt="screenshot" height="400" />
+</div>
+
 ```c
 double y = SCREEN_HEIGHT/2 - rectangle_height; 
 ```
@@ -210,6 +220,7 @@ double y = SCREEN_HEIGHT/2 - rectangle_height;
 But what's `rectangle_height`? Well...
 
 ##### The `h` property
+
 The height of the rectangle, denoted as `visual_height` in the program, is directly inproportional to the `distance` value that gets calculated per iteration, and is the core of this entire raycaster.
 
 ```c
