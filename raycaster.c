@@ -11,6 +11,8 @@
 #define COLOR_WHITE 0xffffff
 #define COLOR_GREEN 0x32a852
 #define COLOR_BLACK 0x000000
+#define COLOR_ORANGE 0xc2a555
+#define COLOR_RED 0x994949
 #define CELL_SIZE 50
 
 #define MAP_WIDTH 5
@@ -18,13 +20,15 @@
 #define SCENE_WIDTH MAP_WIDTH*CELL_SIZE
 #define SCENE_HEIGHT MAP_HEIGHT*CELL_SIZE
 #define PLAYER_FOV 80  
+#define PLAYER_ROTATION_SPEED 5
+#define PLAYER_MOVEMENT_SPEED 5
 
 /* getDistance macros */
 #define RAY_SIZE_MODIFIER 1
 #define RENDER_DISTANCE 250
 
 /* calculation macros*/
-#define DEG2RAD 3.141592653589793/180.0
+#define DEG2RAD M_PI/180.0
 
 bool is_running = true;
 
@@ -41,6 +45,8 @@ typedef struct{
     double x, y, angle; // angle between the direction that the player's looking and the top window border
 } Player;
 
+Player player = {0,0,45};
+
 void listenToKeyboardInput(SDL_Event event){
     while (SDL_PollEvent(&event)){
 	switch(event.type){
@@ -50,6 +56,24 @@ void listenToKeyboardInput(SDL_Event event){
 		    case SDLK_q:
 			is_running = false;
 			break;
+		    case SDLK_LEFT:
+			player.angle -= PLAYER_ROTATION_SPEED;
+			break;
+		    case SDLK_RIGHT:
+			player.angle += PLAYER_ROTATION_SPEED;
+			break;
+		    case SDLK_UP:
+			player.x += 
+			    cos(player.angle * DEG2RAD) * PLAYER_MOVEMENT_SPEED;
+			player.y += 
+			    sin(player.angle * DEG2RAD) * PLAYER_MOVEMENT_SPEED;
+			break;	
+		    case SDLK_DOWN:
+			player.x -= 
+			    cos(player.angle * DEG2RAD) * PLAYER_MOVEMENT_SPEED;
+			player.y -= 
+			    sin(player.angle * DEG2RAD) * PLAYER_MOVEMENT_SPEED;
+			break;	
 		}
 	}
     }
@@ -77,7 +101,6 @@ double getDistance(Player player, double angle){
 	/* which cell is the ray inside ? */
 	int cell_x = ray_x / CELL_SIZE;
 	int cell_y = ray_y / CELL_SIZE;
-	printf("cell values: %d, %d\n", cell_x, cell_y);
 
 	if (cell_x >= MAP_WIDTH || cell_y >= MAP_HEIGHT || cell_x < 0 || cell_y < 0){
 	    return -1;
@@ -119,7 +142,7 @@ void drawFOV(SDL_Surface *pSurface, Player player){
 	double visual_height = SCREEN_HEIGHT * 50 /distance;
 	double vertical_line_x_pos = (angle-angle_offset)*angle_scale;
 
-	drawVerticalLine(pSurface, visual_height, vertical_line_x_pos, COLOR_WHITE);
+	drawVerticalLine(pSurface, visual_height, vertical_line_x_pos, COLOR_ORANGE);
     }
 }
 
@@ -130,8 +153,6 @@ int main(){
     SDL_Window *pWindow = SDL_CreateWindow(
 	    "Le Raycaster", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     SDL_Surface *pSurface = SDL_GetWindowSurface(pWindow);
-    /* initialize game assets */
-    Player player = {0,0,45};
 
     while (is_running){
 	/* listening to keyboard input */
@@ -147,7 +168,7 @@ int main(){
 	player.x += 0.1;
 	player.y += 0.1;
 	/* finishing */
-	SDL_Delay(15);
+	SDL_Delay(60);
     }
     return 0;
 }
